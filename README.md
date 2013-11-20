@@ -1,74 +1,57 @@
-# puppet-jira
-Puppet module for Altassian JIRA  
-authored by Bryce Johnson
+# puppet-confluence
+Puppet module for Altassian Confluence
+Created by Luke Chavers <github.com/vmadman>
+
+This module is a copy/translation of the puppet-jira module by Bryce Johnson <github.com/brycejohnson/puppet-jira>.
+While Bryce Johnson also offers a confluence module, it is older and not yet complete, so I decided to start my own
+based on his Jira work.
+
+Important Note:  I am currently working on this module and it is in no way ready for release, use with EXTREME caution.
 
 ## Introduction
-
-puppet-jira is a module for Atlassian's Enterprise Issue Tracking and
-project management tool.
-
-This puppet module heavily uses hiera-puppet to decouple configuration 
-information from the module itself.  An example is given in `jira.yaml`
-that you can use to construct your own jira hieradata information.  Hiera
-variables are then defined in the module's `params.pp`.
+puppet-confluence is a module for Atlassian's Enterprise Wiki: Confluence.
 
 ## Requirements
+* Java - Tested with Open JDK 1.6:
+* Puppet-Deploy - https://github.com/mkrakowitzer/puppet-deploy.git
 
 ### Puppet
-
-Tested on Puppet 3.0+ 
-Puppet 2.7+ should work as Hiera is now optional.
-
-The puppetlabs production yum repository can be found at:  
-http://yum.puppetlabs.com/el/6/products/x86_64
+Tested on Puppet 3.x+
 
 ### Operating Systems
-* Linux:  RedHat / Centos 5/6 - tested.
-* Linux:  Ubuntu 12.04 - tested.
+* Linux:  CentOS 6.4
+
+Should work on other distributions, but it has not been tested.
 
 ### Databases
-* Postgres
-* MySQL (untested)
+* MySQL (tested)
+* Postgres (not tested)
 
 ### Before you begin
-It is your responsibility to backup your database.  Especially do so
-if you are installing to an existing installation of jira as this module
-is UNTESTED from with an existing install of jira  
-  
-You must have your database setup with the account user that the application
-will use.  This information needs to be put in the hiera yaml, for example
-jira.yaml, in your hieradata directory.  
-  
-I have my own postgres puppet module that installs pg, creates the JIRA
-database, and the JIRA database user before the JIRA puppet module runs.  
-  
-Make sure you have a JAVA_HOME and appropriate java installed on your machine.
-  
-Did I mention if you are upgrading, BACKUP your database first? This module 
-makes no warranty on your data, per its license.  
+Backup your database.  This module expects you to have your database
+preconfigured and ready for Confluence.
 
 ### Installation
 
-This puppet module will automatically download the jira zip from Atlassian
-and extract it into /opt/jira/atlassian-jira-$version
+This puppet module will automatically download the confluence zip from Atlassian
+and extract it into /opt/atlassian/confluence/confluence-$version
 
-This module requires: https://github.com/mkrakowitzer/puppet-deploy.git
-  
 An example on how to use this module:
 
-    class { 'jira':
-      version     => '6.0.1',
-      installdir  => '/opt/atlassian-jira',
-      homedir     => '/opt/atlassian-jira/jira-home',
-      user        => 'jira',
-      group       => 'jira',
+    // Radically incomplete
+    class { 'confluence':
+      version     => '5.3.4',
+      installdir  => '/opt/atlassian/confluence',
+      homedir     => '/opt/atlassian/confluence/confluence-home',
+      user        => 'confluence',
+      group       => 'confluence',
       dbpassword  => 'secret',
       dbserver    => 'localhost',
       javahome    => '/opt/java/jdk1.7.0_21/',
       downloadURL  => 'http://myserver/pub/development-tools/atlassian/',
     }
 
-If you would prefer to use Hiera then see jira.yaml file for an example.
+If you would prefer to use Hiera then see confluence.yaml file for an example.
 
 ### Fixes and Future Work
 Please feel free to raise any issues here for fixes.  I'm happy to fix them

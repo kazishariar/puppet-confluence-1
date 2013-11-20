@@ -1,54 +1,58 @@
-#-----------------------------------------------------------------------------
-#   Copyright (c) 2012 Bryce Johnson
+# == Class: confluence::install
 #
-#   Licensed under the Apache License, Version 2.0 (the "License");
-#   you may not use this file except in compliance with the License.
-#   You may obtain a copy of the License at
+# This module will install Atlassian Confluence.
+# This module requires mkrakowitzer-deploy <github.com/mkrakowitzer/puppet-deploy>
 #
-#       http://www.apache.org/licenses/LICENSE-2.0
+# === Parameters: none
+# === Examples
 #
-#   Unless required by applicable law or agreed to in writing, software
-#   distributed under the License is distributed on an "AS IS" BASIS,
-#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#   See the License for the specific language governing permissions and
-#   limitations under the License.
-#-----------------------------------------------------------------------------
-class jira::install {
+# This class should not be called directly.  Use the base 'confluence' class instead.
+#
+# === Authors
+#
+# Luke Chavers <github.com/vmadman>
+# Based on the puppet-jira module by Bryce Johnson <github.com/brycejohnson/puppet-jira>
+#
+# === Copyright & License
+#
+# See the LICENSE file for license information.
+#
+class confluence::install {
 
-  require jira
+  require confluence
 
-  deploy::file { "atlassian-${jira::product}-${jira::version}.${jira::format}":
-    target  => "${jira::installdir}/atlassian-${jira::product}-${jira::version}-standalone",
-    url     => $jira::downloadURL,
+  deploy::file { "atlassian-${confluence::product}-${confluence::version}.${confluence::format}":
+    target  => "${confluence::installdir}/atlassian-${confluence::product}-${confluence::version}-standalone",
+    url     => $confluence::downloadURL,
     strip   => true,
-    notify  => Exec["chown_${jira::webappdir}"],
+    notify  => Exec["chown_${confluence::webappdir}"],
   } ->
 
-  user { $jira::user:
-    comment          => 'Jira daemon account',
+  user { $confluence::user:
+    comment          => 'Confluence daemon account',
     shell            => '/bin/true',
-    home             => $jira::homedir,
+    home             => $confluence::homedir,
     password         => '*',
     password_min_age => '0',
     password_max_age => '99999',
     managehome       => true,
   } ->
 
-  file { $jira::homedir:
+  file { $confluence::homedir:
     ensure  => 'directory',
-    owner   => $jira::user,
-    group   => $jira::group,
+    owner   => $confluence::user,
+    group   => $confluence::group,
     recurse => true,
   } ->
 
-  exec { "chown_${jira::webappdir}":
-    command     => "/bin/chown -R ${jira::user}:${jira::group} ${jira::webappdir}",
+  exec { "chown_${confluence::webappdir}":
+    command     => "/bin/chown -R ${confluence::user}:${confluence::group} ${confluence::webappdir}",
     refreshonly => true,
-    subscribe   => User[$jira::user]
+    subscribe   => User[$confluence::user]
   } ->
 
-  file { '/etc/init.d/jira':
-    content => template('jira/etc/rc.d/init.d/jira.erb'),
+  file { '/etc/init.d/confluence':
+    content => template('confluence/etc/rc.d/init.d/confluence.erb'),
     mode    => '0755',
   }
 
