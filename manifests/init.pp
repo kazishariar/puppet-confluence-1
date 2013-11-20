@@ -23,12 +23,11 @@
 #
 class confluence (
 
-  # Jira Settings
+  # Confluence Settings
   $version      = '5.3.4',
   $product      = 'confluence',
-  $format       = 'tar.gz',
-  $installdir   = '/opt/atlassian/confluence',
-  $homedir      = '/opt/atlassian/confluence/confluence-home',
+  $format       = 'zip',
+  $installpath  = '/opt',
   $user         = 'confluence',
   $group        = 'confluence',
 
@@ -44,19 +43,38 @@ class confluence (
   #$poolsize     = '15',
 
   # JVM Settings
-  $javahome,
+  $javahome     = "/usr",
   $jvm_xmx      = '1024m',
   $jvm_optional = '-XX:-HeapDumpOnOutOfMemoryError',
 
   # Misc Settings
-  $downloadURL  = 'http://www.atlassian.com/software/confluence/downloads/binary/',
+  $downloadURL  = 'http://www.atlassian.com/software/confluence/downloads/binary',
+
+  # Service Config
+  $manage_service = true,
+  $service_name   = "confluence"
 
 ) {
+
+  # Set us up some composite variables
+  $path_atlassian   = "${installpath}/atlassian"
+  $path_confluence  = "${path_atlassian}/confluence"
+  $path_install     = "${path_confluence}/atlassian-confluence-${version}"
+  $path_home        = "${path_confluence}/confluence-home"
+  $path_link        = "${path_confluence}/confluence-current"
+
+  anchor{ 'confluence::begin': } ->
+
+  class{'confluence::install': } ->
+  class{'confluence::config': } ->
+  class{'confluence::service': } ->
+
+  anchor{ 'confluence::end': }
 
   #$webappdir    = "${installdir}/atlassian-${product}-${version}-standalone"
   #$dburl        = "jdbc:${db}://${dbserver}:${dbport}/${dbname}"
 
-  include confluence::install
+  #include confluence::install
   #include jira::config
   #include jira::service
 

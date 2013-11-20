@@ -1,0 +1,87 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides: confluence
+# Required-Start: 
+# Required-Stop: 
+# Should-Start: 
+# Should-Stop: 
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Start up CONFLUENCE
+# Description:       Atlassian CONFLUENCE Enterprise Wiki
+#                    This service starts up the tomcat webapp.
+### END INIT INFO
+ACTION=$1
+SERVICE=confluence
+OS=`facter osfamily`
+lockfile=/var/lock/subsys/$SERVICE
+if [ $OS == "Debian" ]; then
+  lockfile=/var/lock/$SERVICE
+fi
+
+export JAVA_HOME=<%= scope.lookupvar('confluence::javahome') %>
+export CATALINA_HOME=<%= scope.lookupvar('confluence::path_link') %>
+
+
+function restart() {
+  stop
+  start
+}
+
+function stop() {
+  echo -n $"Shutting down $SERVICE: "
+  <%= scope.lookupvar('confluence::path_link') %>/bin/stop-confluence.sh
+  RETVAL=$?
+  echo
+
+  #If all is well remove the lockfile
+  [ $RETVAL -eq 0 ] && rm -f $lockfile
+  return $RETVAL
+}
+
+function start() {
+  echo -n $"Starting $SERVICE: "
+  <%= scope.lookupvar('confluence::path_link') %>/bin/start-confluence.sh
+  RETVAL=$?
+  echo
+
+  #If all is well touch the lock file
+  [ $RETVAL -eq 0 ] && touch $lockfile
+  return $RETVAL
+}
+
+function status() {
+
+    local pid
+
+    pid=$(pgrep -P1 -fl $SERVICE | grep -v grep | grep -v bash | cut -f1 -d" ")
+    if [ -n "$pid" ]; then
+        echo $"${SERVICE} (pid $pid) is running..."
+        return 0
+    fi
+
+    echo $"${SERVICE} is stopped"
+    return 3
+}
+
+function execute() {
+  case "$ACTION" in
+    start)
+      start
+      ;;
+    stop)
+      stop
+      ;;
+    status)
+      status
+      ;;
+    restart)
+      restart
+      ;;
+    *)
+      echo "Usage: $0 {start|stop|status|restart}"
+      exit 1
+  esac
+}
+
+execute

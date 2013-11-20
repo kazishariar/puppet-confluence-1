@@ -1,7 +1,6 @@
 # == Class: confluence::install
 #
 # This module will install Atlassian Confluence.
-# This module requires mkrakowitzer-deploy <github.com/mkrakowitzer/puppet-deploy>
 #
 # === Parameters: none
 # === Examples
@@ -19,41 +18,61 @@
 #
 class confluence::install {
 
-  require confluence
+  # http://www.atlassian.com/software/confluence/downloads/binary/atlassian-confluence-5.3.4.zip
 
-  deploy::file { "atlassian-${confluence::product}-${confluence::version}.${confluence::format}":
-    target  => "${confluence::installdir}/atlassian-${confluence::product}-${confluence::version}-standalone",
-    url     => $confluence::downloadURL,
-    strip   => true,
-    notify  => Exec["chown_${confluence::webappdir}"],
+  anchor {'confluence::install::begin': } ->
+
+  file { $confluence::path_atlassian:
+    ensure  => 'directory',
+    mode => "0755",
+    recurse => true,
+  } ->
+
+  file { $confluence::path_confluence:
+    ensure  => 'directory',
+    mode => "0755",
+    recurse => true,
+  } ->
+
+  file { $confluence::path_home:
+    ensure  => 'directory',
+    mode => "0755",
+    recurse => true,
   } ->
 
   user { $confluence::user:
     comment          => 'Confluence daemon account',
     shell            => '/bin/true',
-    home             => $confluence::homedir,
+    home             => $confluence::path_home,
     password         => '*',
     password_min_age => '0',
     password_max_age => '99999',
     managehome       => true,
+    require          => File[$confluence::path_home],
   } ->
 
-  file { $confluence::homedir:
-    ensure  => 'directory',
-    owner   => $confluence::user,
-    group   => $confluence::group,
-    recurse => true,
+  wget::fetch { "download_confluence":
+    source      => "${confluence::downloadURL}/atlassian-confluence-${confluence::version}.zip",
+    destination => "${confluence::path_confluence}/atlassian-confluence-${confluence::version}.zip",
   } ->
 
-  exec { "chown_${confluence::webappdir}":
-    command     => "/bin/chown -R ${confluence::user}:${confluence::group} ${confluence::webappdir}",
+  exec { "extract_confluence":
+    cwd         => $confluence::path_confluence,
+    command     => "/usr/bin/unzip atlassian-confluence-${confluence::version}.zip",
     refreshonly => true,
-    subscribe   => User[$confluence::user]
+    subscribe   => Wget::Fetch["download_confluence"],
   } ->
 
-  file { '/etc/init.d/confluence':
-    content => template('confluence/etc/rc.d/init.d/confluence.erb'),
-    mode    => '0755',
-  }
+  file { $confluence::path_link:
+    ensure  => 'link',
+    mode => "0755",
+    target  => $confluence::path_install
+  } ->
+
+  exec { "chown_${confluence::path_confluence}":
+    command     => "/bin/chown -R ${confluence::user}:${confluence::group} ${confluence::path_confluence}",
+  } ->
+
+  anchor {'confluence::install::end': }
 
 }

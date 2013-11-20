@@ -1,11 +1,8 @@
-name    'mkrakowitzer-jira'
-version '0.0.3'
-source 'https://github.com/brycejohnson/puppet-jira.git'
-author 'brycejohnson'
+name    'vmadman-jira'
+version '0.0.1'
+source 'https://github.com/vmadman/puppet-confluence'
+author 'Luke Chavers <github.com/vmadman>'
 license 'Apache License, Version 2.0'
-summary 'Module to install Jira'
-description 'Module to install Jira'
-project_page 'https://github.com/brycejohnson/puppet-jira/blob/master/README.md'
-
-## Add dependencies, if any:
-dependency 'mkrakowitzer/deploy', '>= 0.0.1'
+summary 'Module to install Confluence'
+description 'Module to install Confluence'
+project_page 'https://github.com/vmadman/puppet-confluence'

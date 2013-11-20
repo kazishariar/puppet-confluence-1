@@ -1,28 +1,41 @@
-#-----------------------------------------------------------------------------
-#   Copyright (c) 2012 Bryce Johnson
+# == Class: confluence::service
 #
-#   Licensed under the Apache License, Version 2.0 (the "License");
-#   you may not use this file except in compliance with the License.
-#   You may obtain a copy of the License at
+# This module will install Atlassian Confluence.
 #
-#       http://www.apache.org/licenses/LICENSE-2.0
+# === Parameters: none
+# === Examples
 #
-#   Unless required by applicable law or agreed to in writing, software
-#   distributed under the License is distributed on an "AS IS" BASIS,
-#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#   See the License for the specific language governing permissions and
-#   limitations under the License.
-#-----------------------------------------------------------------------------
-class jira::service {
+# This class should not be called directly.  Use the base 'confluence' class instead.
+#
+# === Authors
+#
+# Luke Chavers <github.com/vmadman>
+# Based on the puppet-jira module by Bryce Johnson <github.com/brycejohnson/puppet-jira>
+#
+# === Copyright & License
+#
+# See the LICENSE file for license information.
+#
+class confluence::service {
 
-  service { 'jira':
-    ensure    => 'running',
-    provider  => base,
-    start     => '/etc/init.d/jira start',
-    restart   => '/etc/init.d/jira restart',
-    stop      => '/etc/init.d/jira stop',
-    status    => '/etc/init.d/jira status',
-    require   => Class['jira::config'],
+  if( $confluence::manage_service ) {
+
+    file { "/etc/rc.d/init.d/confluence":
+      content => template("confluence/confluence.initd.erb"),
+      mode    => '0755',
+      require => [ Class['confluence::install'], Class['confluence::config'] ],
+      notify  => Service[$confluence::service_name],
+    }
+
+    service { $confluence::service_name:
+      ensure    => 'running',
+      provider  => base,
+      start     => '/etc/init.d/confluence start',
+      restart   => '/etc/init.d/confluence restart',
+      stop      => '/etc/init.d/confluence stop',
+      status    => '/etc/init.d/confluence status',
+      require   => Class['confluence::config'],
+    }
   }
 
 }
